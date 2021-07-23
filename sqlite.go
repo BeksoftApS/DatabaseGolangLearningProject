@@ -32,6 +32,29 @@ func main() {
 
 	rows.Close() //good habit to close
 /*
+   // insert
+   stmt, err := db.Prepare("INSERT INTO userinfo(username, departname, created) values(?,?,?)")
+   checkErr(err)
+
+   res, err := stmt.Exec("astaxie", "研发部门", "2012-12-09")
+   checkErr(err)
+
+   id, err := res.LastInsertId()
+   checkErr(err)
+
+   fmt.Println(id)
+   // update
+   stmt, err = db.Prepare("update userinfo set username=? where uid=?")
+   checkErr(err)
+
+   res, err = stmt.Exec("astaxieupdate", id)
+   checkErr(err)
+
+   affect, err := res.RowsAffected()
+   checkErr(err)
+
+   fmt.Println(affect)
+
 	// delete
 	stmt, err = db.Prepare("delete from userinfo where uid=?")
 	checkErr(err)
