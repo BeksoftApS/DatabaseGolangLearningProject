@@ -4,70 +4,84 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
+	"strconv"
 )
 
+var database *sql.DB
+
 func main() {
-	db, _ := sql.Open("sqlite3", "./DatabaseGolangLearningProject/sqliteData.db")
+	database, _ = sql.Open("sqlite3", "./DatabaseGolangLearningProject/sqliteData.db")
+	insertUser()
+	selectAllUsers()
+	database.Close()
+}
 
-	// query
-	rows, err := db.Query("SELECT * FROM Users")
-
-	if(err!=nil){
-		panic(err)
+func selectAllUsers(){
+	allUsersData, queryError := database.Query("SELECT * FROM Users") // SELECT * query
+	if queryError!=nil {                                              // Query Error Handling
+		panic(queryError)
 	}
+	printAllUsers(allUsersData)
+	allUsersData.Close() //good habit to close
+}
 
-	var id int
+func printAllUsers(allUsersData *sql.Rows){
+	var id, age int
 	var name string
-	var age int
-
 	fmt.Print("id"); fmt.Print(" ")
 	fmt.Print("name"); fmt.Print(" ")
 	fmt.Println("age")
-	for rows.Next() {
-		rows.Scan(&id, &name, &age)
+	for allUsersData.Next() { //while loop
+		allUsersData.Scan(&id, &name, &age)
 		fmt.Print(id); fmt.Print(" ")
 		fmt.Print(name); fmt.Print(" ")
 		fmt.Println(age)
 	}
+}
 
-	rows.Close() //good habit to close
-/*
-   // insert
-   stmt, err := db.Prepare("INSERT INTO userinfo(username, departname, created) values(?,?,?)")
-   checkErr(err)
+func insertUser(){
+	// insert
+	statement, statementError := database.Prepare("INSERT INTO Users(name, age) values(?,?)")
+	if(statementError != nil){
+		fmt.Println(statementError.Error())
+	} else {
+		result, _ := statement.Exec("kage er dejligt", "23")
+		id, _ := result.LastInsertId()
+		fmt.Println("last insert id: "+ strconv.FormatInt(id, 10))
+	}
 
-   res, err := stmt.Exec("astaxie", "研发部门", "2012-12-09")
-   checkErr(err)
+	/*
+	   // insert
+	   stmt, err := db.Prepare("INSERT INTO userinfo(username, departname, created) values(?,?,?)")
+	   checkErr(err)
 
-   id, err := res.LastInsertId()
-   checkErr(err)
+	   res, err := stmt.Exec("astaxie", "研发部门", "2012-12-09")
+	   checkErr(err)
 
-   fmt.Println(id)
-   // update
-   stmt, err = db.Prepare("update userinfo set username=? where uid=?")
-   checkErr(err)
+	   id, err := res.LastInsertId()
+	   checkErr(err)
 
-   res, err = stmt.Exec("astaxieupdate", id)
-   checkErr(err)
+	   fmt.Println(id)
+	   // update
+	   stmt, err = db.Prepare("update userinfo set username=? where uid=?")
+	   checkErr(err)
 
-   affect, err := res.RowsAffected()
-   checkErr(err)
+	   res, err = stmt.Exec("astaxieupdate", id)
+	   checkErr(err)
 
-   fmt.Println(affect)
+	   affect, err := res.RowsAffected()
+	   checkErr(err)
 
-	// delete
-	stmt, err = db.Prepare("delete from userinfo where uid=?")
-	checkErr(err)
+	   fmt.Println(affect)
 
-	res, err = stmt.Exec(id)
-	checkErr(err)
+		// delete
+		stmt, err = db.Prepare("delete from userinfo where uid=?")
+		checkErr(err)
 
-	affect, err = res.RowsAffected()
-	checkErr(err)
-*/
+		res, err = stmt.Exec(id)
+		checkErr(err)
 
-	db.Close()
-
-
-
+		affect, err = res.RowsAffected()
+		checkErr(err)
+	*/
 }
